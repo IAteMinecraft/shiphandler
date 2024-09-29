@@ -1,0 +1,42 @@
+modLoader="javafml" #mandatory
+
+loaderVersion="[47,)"
+license="MIT License"
+#issueTrackerURL="https://change.me.to.your.issue.tracker.example.invalid/" #optional
+[[mods]]
+modId="shiphandler"
+version="1.0.4" #mandatory
+displayName="Ship Handler" #mandatory
+# A URL for the "homepage" for this mod, displayed in the mod UI
+#displayURL="https://change.me.to.your.mods.homepage.example.invalid/" #optional
+# A file name (in the root of the mod JAR) containing a logo for display
+#logoFile="logo.png" #optional
+#credits="I Ate Minecraft" #optional
+authors="IAteMinecraft" #optional
+description='''Allows you to automatically delete ships that aren't in the configuration file, to reduce lag'''
+# A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
+[[dependencies."shiphandler"]] #optional
+    # the modid of the dependency
+    modId="forge" #mandatory
+    # Does this dependency have to exist - if not, ordering below must be specified
+    mandatory=true #mandatory
+    # The version range of the dependency
+    versionRange="[47,)" #mandatory
+    # An ordering relationship for the dependency - BEFORE or AFTER required if the relationship is not mandatory
+    ordering="NONE"
+    # Side this dependency is applied on - BOTH, CLIENT or SERVER
+    side="BOTH"
+# Here's another dependency
+[[dependencies."shiphandler"]]
+    modId = "minecraft"
+    mandatory = true
+    versionRange = "1.20.1"
+    ordering = "NONE"
+    side = "BOTH"
+
+[[dependencies."shiphandler"]]
+    modId="valkyrienskies"
+    mandatory=true
+    versionRange="[2,)"
+    ordering="AFTER"
+    side="BOTH"

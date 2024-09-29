@@ -1,0 +1,8 @@
+#.
+#Allows Operators to register infinite ships.
+"Infinite OP Ships" = true
+#.
+#The Maximum number of ships a player can register. -1 for no limit.
+#Range: > -1
+"Max ships" = -1
+
