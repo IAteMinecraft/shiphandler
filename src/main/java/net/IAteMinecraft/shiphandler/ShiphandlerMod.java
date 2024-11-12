@@ -9,6 +9,8 @@ import com.simibubi.create.foundation.item.TooltipHelper;
 import net.minecraft.resources.ResourceLocation;
 
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -17,8 +19,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import org.slf4j.Logger;
-
-import java.time.*;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod("shiphandler")
@@ -59,17 +59,20 @@ public class ShiphandlerMod
             ShiphandlerCommands.register(event.getDispatcher());
         }
 
-        /*@SubscribeEvent
-        private void setup(LevelEvent event) {
-            // Code that runs once during the common setup
-            LOGGER.info("---------------------------------------------------------------------------------------------------");
-            LOGGER.info("World Loading: {}", event.toString());
-            LOGGER.info("---------------------------------------------------------------------------------------------------");
-            //if (ShiphandlerConfig.server().useScheduler.get()) {
-            //    HandleShips handleShips = new HandleShips(ShiphandlerConfig.server().timeZone.get(), ShiphandlerConfig.server().DaysToRun.get(), HandleShips.parseTime(ShiphandlerConfig.server().time.get()));
-            //    handleShips.schedule();
-            //}
-        }*/
+        @SubscribeEvent
+        public static void registerOnLevelLoad(LevelEvent.Load event) {
+            HandleShips.onLevelLoad(event);
+        }
+
+        @SubscribeEvent
+        public static void registerOnServerTick(TickEvent.ServerTickEvent event) {
+            HandleShips.onServerTick(event);
+        }
+
+        @SubscribeEvent
+        public static void registerOnPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
+            HandleShips.onPlayerJoin(event);
+        }
     }
 
     public static void warn(String format, Object... args) {

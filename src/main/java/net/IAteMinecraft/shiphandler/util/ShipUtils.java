@@ -1,6 +1,5 @@
 package net.IAteMinecraft.shiphandler.util;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 

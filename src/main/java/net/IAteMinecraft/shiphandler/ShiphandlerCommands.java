@@ -2,143 +2,99 @@ package net.IAteMinecraft.shiphandler;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-
-import com.simibubi.create.foundation.utility.Lang;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.OutgoingChatMessage;
-import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 
 import org.valkyrienskies.core.api.ships.Ship;
 import org.valkyrienskies.mod.common.command.ShipArgument;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.function.Supplier;
-
 public class ShiphandlerCommands {
-
-    // Static reference to hold the single instance of HandleShips
-    private static HandleShips currentHandleShipsInstance = null;
-    private static ExecutorService executor = Executors.newSingleThreadExecutor();
-
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher){
         dispatcher.register(Commands.literal("ship-handler")
             .then(Commands.literal("ship")
                 .then(Commands.literal("add")
                 .requires((player) -> player.hasPermission(2))
                     .then(Commands.argument("ship", ShipArgument.Companion.ships())
-                        .executes(command -> {
-                            return registerShip(command, ShipArgument.Companion.getShip(((CommandContext) command), "ship"), true);
-                        })
+                        .executes(command -> registerShip(command, ShipArgument.Companion.getShip(((CommandContext) command), "ship"), true))
                     )
                 )
                 .then(Commands.literal("remove")
                 .requires((player) -> player.hasPermission(2))
                     .then(Commands.argument("ship", ShipArgument.Companion.ships())
-                        .executes(command -> {
-                            return unregisterShip(command, ShipArgument.Companion.getShip(((CommandContext) command), "ship"), true);
-                        })
+                        .executes(command -> unregisterShip(command, ShipArgument.Companion.getShip(((CommandContext) command), "ship"), true))
                     )
-                )
-                .then(Commands.literal("listAllShips")
-                .requires((player) -> player.hasPermission(2))
-                    .executes(ShiphandlerCommands::listShips)
                 )
                 .then(Commands.literal("register")
                     .then(Commands.argument("ship", ShipArgument.Companion.ships())
-                        .executes(command -> {
-                            return registerShip(command, ShipArgument.Companion.getShip(((CommandContext) command), "ship"), false);
-                        })
+                        .executes(command -> registerShip(command, ShipArgument.Companion.getShip(((CommandContext) command), "ship"), false))
                     )
                 )
                 .then(Commands.literal("unregister")
                     .then(Commands.argument("ship", ShipArgument.Companion.ships())
-                        .executes(command -> {
-                            return unregisterShip(command, ShipArgument.Companion.getShip(((CommandContext) command), "ship"), false);
-                        })
+                        .executes(command -> unregisterShip(command, ShipArgument.Companion.getShip(((CommandContext) command), "ship"), false))
                     )
+                )
+                .then(Commands.literal("autoRegister")
+                    .then(Commands.argument("true|false", BoolArgumentType.bool())
+                        .executes(command -> setAutoRegister(command, BoolArgumentType.getBool(command, "true|false")))
+                    )
+                    .executes(ShiphandlerCommands::getAutoRegister)
+                )
+            )
+            .then(Commands.literal("handler")
+            .requires((player) -> player.hasPermission(2))
+                .then(Commands.literal("run")
+                    .executes(ShiphandlerCommands::handlerRun)
+                )
+            )
+            .then(Commands.literal("get-id")
+                .then(Commands.argument("ship", ShipArgument.Companion.ships())
+                    .executes(command -> getId(command, ShipArgument.Companion.getShip(((CommandContext) command), "ship")))
+                )
+            )
+            .then(Commands.literal("list")
+                .then(Commands.literal("all-created-ships")
+                    .requires((player) -> player.hasPermission(4))
+                    .executes(ShiphandlerCommands::debugListAll)
+                )
+                .then(Commands.literal("all-registered-ships")
+                    .requires((player) -> player.hasPermission(4))
+                    .executes(ShiphandlerCommands::listShips)
+                )
+                .then(Commands.literal("created-ships")
+                    .executes(ShiphandlerCommands::debugList)
                 )
                 .then(Commands.literal("list")
                     .executes(ShiphandlerCommands::list)
                 )
             )
-            .then(Commands.literal("scheduler")
-            .requires((player) -> player.hasPermission(2))
-                .then(Commands.literal("run")
-                    .executes(ShiphandlerCommands::schedulerRun)
-                )
-                .then(Commands.literal("start")
-                    .executes(ShiphandlerCommands::schedulerStart)
-                )
-                .then(Commands.literal("stop")
-                    .executes(ShiphandlerCommands::schedulerStop)
-                )
-            )
-            .then(Commands.literal("get-id")
-                .then(Commands.argument("ship", ShipArgument.Companion.ships())
-                    .executes(command -> {
-                        return getId(command, ShipArgument.Companion.getShip(((CommandContext) command), "ship"));
-                    })
-                )
-            )
         );
     }
 
-    private static int schedulerRun(CommandContext<CommandSourceStack> command) {
+    private static int handlerRun(CommandContext<CommandSourceStack> command) {
         HandleShips.handle();
-        command.getSource().sendSystemMessage(Lang.text("Successfully ran the scheduler!").component());
+        command.getSource().sendSystemMessage(Component.literal("Successfully ran the scheduler!"));
         return Command.SINGLE_SUCCESS;
     }
-
-    // Start the scheduler, but ensure only one instance is running
-    private static int schedulerStart(CommandContext<CommandSourceStack> command) {
-        if (currentHandleShipsInstance != null) {
-            command.getSource().sendFailure(Lang.text("Scheduler is already running!").component());
-            return Command.SINGLE_SUCCESS;
-        }
-
-        /*currentHandleShipsInstance = new HandleShips(
-                ShiphandlerConfig.server().timeZone.get(),
-                ShiphandlerConfig.server().DaysToRun.get(),
-                HandleShips.parseTime(ShiphandlerConfig.server().time.get())
-        );
-        executor.submit(currentHandleShipsInstance::schedule);*/
-        //command.getSource().sendSystemMessage(Lang.text("Successfully started the scheduler!").component());
-        command.getSource().sendSystemMessage(Lang.text("Not implemented").component());
-        return Command.SINGLE_SUCCESS;
-    }
-
-    // Stop the scheduler and reset the instance
-    private static int schedulerStop(CommandContext<CommandSourceStack> command) {
-        if (currentHandleShipsInstance != null) {
-            currentHandleShipsInstance.stop();
-            currentHandleShipsInstance = null;
-            command.getSource().sendSystemMessage(Lang.text("Successfully stopped the scheduler!").component());
-        } else {
-            command.getSource().sendFailure(Lang.text("No scheduler is currently running.").component());
-        }
-        return Command.SINGLE_SUCCESS;
-    }
-
     // Clean up HandleShips when the world is unloaded
     public static void onWorldUnload() {
-        if (currentHandleShipsInstance != null) {
+        /*if (currentHandleShipsInstance != null) {
             currentHandleShipsInstance.stop();
             currentHandleShipsInstance = null;
-        }
+        }*/
     }
 
     private static int listShips(CommandContext<CommandSourceStack> command) {
         if(command.getSource().getEntity() instanceof Player player){
             ServerLevel level = player.getServer().overworld();
             ShipDataStore dataStore = ShipDataStore.get(level);
-            player.sendSystemMessage(Lang.text("Registered Ships: \n" + dataStore.getAllShipsWithPlayerName()).component());
+            player.sendSystemMessage(Component.literal("Registered Ships: \n" + dataStore.getAllRegisteredShipSlugsWithPlayerName()));
             return Command.SINGLE_SUCCESS;
         } else
             return 0;
@@ -148,32 +104,48 @@ public class ShiphandlerCommands {
         if(command.getSource().getEntity() instanceof Player player){
             ServerLevel level = player.getServer().overworld();
             ShipDataStore dataStore = ShipDataStore.get(level);
-            player.sendSystemMessage(Lang.text("Registered Ships: " + dataStore.getShips(player)).component());
+            player.sendSystemMessage(Component.literal("Registered Ships: " + dataStore.getRegisteredShipsSlug(player)));
             return Command.SINGLE_SUCCESS;
         } else
             return 0;
     }
 
-    private static int execute(CommandContext<CommandSourceStack> command, Ship ship){
-        if (command.getSource().getEntity() instanceof Player player) {
-            player.sendSystemMessage(Lang.text(ship.getSlug()).component());
-        }
-        return Command.SINGLE_SUCCESS;
+    private static int debugListAll(CommandContext<CommandSourceStack> command) {
+        if(command.getSource().getEntity() instanceof Player player){
+            ServerLevel level = player.getServer().overworld();
+            ShipDataStore dataStore = ShipDataStore.get(level);
+            player.sendSystemMessage(Component.literal("Created Ships: \n" + dataStore.getAllShipSlugsWithPlayerName()));
+            return Command.SINGLE_SUCCESS;
+        } else
+            return 0;
+    }
+
+    private static int debugList(CommandContext<CommandSourceStack> command) {
+        if(command.getSource().getEntity() instanceof Player player){
+            ServerLevel level = player.getServer().overworld();
+            ShipDataStore dataStore = ShipDataStore.get(level);
+            player.sendSystemMessage(Component.literal("Created Ships: " + dataStore.getShipsSlug(player)));
+            return Command.SINGLE_SUCCESS;
+        } else
+            return 0;
     }
 
     private static int registerShip(CommandContext<CommandSourceStack> command, Ship ship, boolean op){
         if (command.getSource().getEntity() instanceof Player player) {
             ServerLevel level = player.getServer().overworld();
             ShipDataStore dataStore = ShipDataStore.get(level);
-            if (dataStore.getShipsId(player).contains(ship.getId()) && !op) {
-                player.sendSystemMessage(Lang.text("§4You already own that ship").component());
+            if (dataStore.getRegisteredShipsId(player).contains(ship.getId()) && !op) {
+                player.sendSystemMessage(Component.literal("§4You already own that ship"));
                 return Command.SINGLE_SUCCESS;
-            } else if (dataStore.getAllShipsId().contains(ship.getId()) && !op) {
-                player.sendSystemMessage(Lang.text("§4That Ship is already owned by another player").component());
+            } else if (dataStore.getAllRegisteredShipIDs().contains(ship.getId()) && !op) {
+                player.sendSystemMessage(Component.literal("§4That Ship is already owned by another player"));
+                return Command.SINGLE_SUCCESS;
+            } else if ((dataStore.getMaxShips(player) == -1 || dataStore.getCurrentRegisteredShipCount(player)+1 > dataStore.getMaxShips(player)) && !(op ? ShiphandlerConfig.server().infOpShips.get() : false)) {
+                player.sendSystemMessage(Component.literal("§4You have reached your maximum amount of ships!\nConsider removing some ships, or turn off autoRegister"));
                 return Command.SINGLE_SUCCESS;
             } else {
-                player.sendSystemMessage(Lang.text("Registered Ship: " + ship.getSlug() + " for player: ").component().append(player.getDisplayName()));
-                if (dataStore.add(player, ship, ShiphandlerConfig.server().infOpShips.get() ? -1 : ShiphandlerConfig.server().maxShips.get()))
+                player.sendSystemMessage(Component.literal("Registered Ship: " + ship.getSlug() + " for player: ").append(player.getDisplayName()));
+                if (dataStore.registerShip(player, ship))
                     return Command.SINGLE_SUCCESS;
                 else
                     return 0;
@@ -186,14 +158,14 @@ public class ShiphandlerCommands {
         if (command.getSource().getEntity() instanceof Player player) {
             ServerLevel level = player.getServer().overworld();
             ShipDataStore dataStore = ShipDataStore.get(level);
-            if (dataStore.getShipsId(player).contains(ship.getId()) || op) {
-                player.sendSystemMessage(Lang.text("Unregistered Ship: " + ship.getSlug() + " for player: " + dataStore.getPlayerNameFromShip(ship.getId())).component());
-                if (dataStore.removeShipById(ship.getId()))
+            if (dataStore.getRegisteredShipsId(player).contains(ship.getId()) || op) {
+                player.sendSystemMessage(Component.literal("Unregistered Ship: " + ship.getSlug() + " for player: " + dataStore.getPlayerName(ship.getId())));
+                if (dataStore.unregisterShip(player, ship.getId()))
                     return Command.SINGLE_SUCCESS;
                 else
                     return 0;
             } else {
-                player.sendSystemMessage(Lang.text("§4You don't own that ship").component());
+                player.sendSystemMessage(Component.literal("§4You don't own that ship"));
                 return Command.SINGLE_SUCCESS;
             }
         } else
@@ -202,7 +174,29 @@ public class ShiphandlerCommands {
 
     private static int getId(CommandContext<CommandSourceStack> command, Ship ship){
         if (command.getSource().getEntity() instanceof Player player) {
-            player.sendSystemMessage(Lang.text(String.valueOf(ship.getId())).component());
+            player.sendSystemMessage(Component.literal(String.valueOf(ship.getId())));
+            return Command.SINGLE_SUCCESS;
+        } else
+            return 0;
+    }
+
+    private static int setAutoRegister(CommandContext<CommandSourceStack> command, boolean autoRegister) {
+        if (command.getSource().getEntity() instanceof Player player) {
+            ServerLevel level = player.getServer().overworld();
+            ShipDataStore dataStore = ShipDataStore.get(level);
+
+            dataStore.setAutoRegister(player, autoRegister);
+            return Command.SINGLE_SUCCESS;
+        } else
+            return 0;
+    }
+
+    private static int getAutoRegister(CommandContext<CommandSourceStack> command) {
+        if (command.getSource().getEntity() instanceof Player player) {
+            ServerLevel level = player.getServer().overworld();
+            ShipDataStore dataStore = ShipDataStore.get(level);
+
+            player.sendSystemMessage(Component.literal(String.valueOf(dataStore.usesAutoRegister(player))));
             return Command.SINGLE_SUCCESS;
         } else
             return 0;

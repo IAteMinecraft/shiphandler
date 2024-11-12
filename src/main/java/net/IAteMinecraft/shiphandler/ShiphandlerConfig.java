@@ -20,38 +20,10 @@ public class ShiphandlerConfig {
     //private static TClient client;
 
     public static class TServer extends ConfigBase {
-        /*protected <T extends Enum<T>> ConfigListEnum<T> le(List<? extends Enum<T>> current, String name, String... comment) {
-            return new ConfigListEnum<>(name, (List<Enum<T>>) current, comment);
-        }
-
-        protected ConfigString s(String current, String name, String... comment) {
-            return new ConfigString(name, current, comment);
-        }
-
-        public class ConfigListEnum<T extends Enum<T>> extends CValue<List<? extends Enum<T>>, ForgeConfigSpec.ConfigValue<List<? extends Enum<T>>>> {
-            public ConfigListEnum(String name, List<Enum<T>> current, String... comment) {
-                super(name, (builder) -> {
-                    return builder.defineList(name, current, entry -> true);
-                }, comment);
-            }
-        }
-
-        public class ConfigString extends CValue<String, ForgeConfigSpec.ConfigValue<String>> {
-            public ConfigString(String name, String current, String... comment) {
-                super(name, (builder) -> {
-                    return builder.define(name, current);
-                }, comment);
-            }
-        }*/
 
         public final ConfigBase.ConfigBool infOpShips = this.b(true, "Infinite OP Ships", "Allows Operators to register infinite ships.");
+        public final ConfigBase.ConfigBool autoRegister = this.b(true, "Auto Register Ships", "Make newly created ships automatically register to their owner.");
         public final ConfigBase.ConfigInt maxShips = this.i(-1, -1, "Max ships", "The Maximum number of ships a player can register. -1 for no limit.");
-
-        /*public final ConfigBase.ConfigGroup scheduler = this.group(1, "Scheduler", "NOTE: Changing any of these values REQUIRES you to RESTART the server\nThis is currently broken!");
-        public final ConfigBase.ConfigBool useScheduler = this.b(true, "Use Scheduler", "Whether or not to use the scheduler");
-        public final ConfigListEnum<DayOfWeek> DaysToRun = this.le(Arrays.asList(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY), "Days To Run", "The days of the week to run the scheduler, \n Use 'Insert Day here, in CAPS'");
-        public final ConfigString timeZone = this.s("GMT", "Time Zone", "The Time Zone to use when scheduling times");
-        public final ConfigString time = this.s("00:00", "Time", "The time that the scheduler runs on each day");*/
 
         @Override
         public String getName() {
