@@ -3,7 +3,6 @@ package net.IAteMinecraft.shiphandler;
 import com.mojang.datafixers.util.Pair;
 
 import net.minecraft.nbt.*;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -12,6 +11,7 @@ import org.valkyrienskies.core.api.ships.Ship;
 
 import java.util.*;
 
+@SuppressWarnings("unused")
 public class ShipDataStore extends SavedData {
     private static final String DATA_NAME = "ship_data";
 
@@ -119,7 +119,7 @@ public class ShipDataStore extends SavedData {
     public boolean registerShip(Player player, Ship ship) {
         //player.sendSystemMessage(Component.literal("Register Ship Attempt for ship: " + ship.getSlug() + ", by player: ").append(player.getDisplayName()));
         if (!playerDataMap.containsKey(player.getUUID())) {
-            addPlayer(player, ShiphandlerConfig.server().maxShips.get(), ShiphandlerConfig.server().autoRegister.get());
+            addPlayer(player, ShiphandlerConfig.maxShips.get(), ShiphandlerConfig.autoRegister.get());
             //player.sendSystemMessage(Component.literal("Player has not been added to dataStore, adding: ").append(player.getDisplayName()));
         }
         PlayerData playerData = playerDataMap.get(player.getUUID());

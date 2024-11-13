@@ -2,21 +2,16 @@ package net.IAteMinecraft.shiphandler;
 
 import com.mojang.logging.LogUtils;
 
-import com.simibubi.create.foundation.data.CreateRegistrate;
-import com.simibubi.create.foundation.item.ItemDescription;
-import com.simibubi.create.foundation.item.TooltipHelper;
-
 import net.minecraft.resources.ResourceLocation;
 
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.LevelEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.config.ModConfig;
 
 import org.slf4j.Logger;
 
@@ -32,23 +27,13 @@ public class ShiphandlerMod
     }
 
     public static final String MOD_ID = "shiphandler";
-    public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(MOD_ID);
-
-    static {
-        REGISTRATE.setTooltipModifierFactory(item ->
-                new ItemDescription.Modifier(item, TooltipHelper.Palette.STANDARD_CREATE));
-    }
 
     public ShiphandlerMod() { onCtor(); }
 
     public void onCtor() {
         ModLoadingContext modLoadingContext = ModLoadingContext.get();
-        IEventBus modEventBus = FMLJavaModLoadingContext.get()
-                .getModEventBus();
 
-        REGISTRATE.registerEventListeners(modEventBus);
-
-        ShiphandlerConfig.register(modLoadingContext);
+        modLoadingContext.registerConfig(ModConfig.Type.SERVER, ShiphandlerConfig.GENERAL_SPEC, "shiphandler.toml");
     }
 
     @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)

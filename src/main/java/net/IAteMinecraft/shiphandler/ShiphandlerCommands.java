@@ -140,7 +140,7 @@ public class ShiphandlerCommands {
             } else if (dataStore.getAllRegisteredShipIDs().contains(ship.getId()) && !op) {
                 player.sendSystemMessage(Component.literal("§4That Ship is already owned by another player"));
                 return Command.SINGLE_SUCCESS;
-            } else if ((dataStore.getMaxShips(player) == -1 || dataStore.getCurrentRegisteredShipCount(player)+1 > dataStore.getMaxShips(player)) && !(op ? ShiphandlerConfig.server().infOpShips.get() : false)) {
+            } else if ((dataStore.getMaxShips(player) == -1 || dataStore.getCurrentRegisteredShipCount(player)+1 > dataStore.getMaxShips(player)) && !(op ? ShiphandlerConfig.infOpShips.get() : false)) {
                 player.sendSystemMessage(Component.literal("§4You have reached your maximum amount of ships!\nConsider removing some ships, or turn off autoRegister"));
                 return Command.SINGLE_SUCCESS;
             } else {

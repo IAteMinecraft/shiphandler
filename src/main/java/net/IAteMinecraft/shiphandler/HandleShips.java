@@ -3,6 +3,7 @@ package net.IAteMinecraft.shiphandler;
 import net.IAteMinecraft.shiphandler.util.EntityUtils;
 import net.IAteMinecraft.shiphandler.util.MathUtils;
 
+import net.IAteMinecraft.shiphandler.util.TextUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -84,7 +85,7 @@ public class HandleShips {
         ShipDataStore shipDataStore = ShipDataStore.get(event.getEntity().getServer().overworld());
 
         if (!shipDataStore.hasPlayer(player)) {
-            shipDataStore.addPlayer(player, ShiphandlerConfig.server().maxShips.get(), ShiphandlerConfig.server().autoRegister.get());
+            shipDataStore.addPlayer(player, ShiphandlerConfig.maxShips.get(), ShiphandlerConfig.autoRegister.get());
         }
     }
 
@@ -109,10 +110,17 @@ public class HandleShips {
                     //EntityUtils.sendChatMessage(event.getServer(), Component.literal("New ship detected with Slug: " + ship.getSlug()));
 
                     Level level = event.getServer().overworld();
+                    //EntityUtils.sendChatMessage(event.getServer(), Component.literal("Ship Dimension: " + ship.getChunkClaimDimension()));
+                    //EntityUtils.sendChatMessage(event.getServer(), Component.literal("Dim id function: " + TextUtils.formatDimensoinId(level.dimension().toString())));
                     for (Level level_ : event.getServer().getAllLevels()) {
-                        if (level_.dimension().toString().equals(ship.getChunkClaimDimension())) {
+                        if (TextUtils.formatDimensionId(level_.dimension().toString()).equals(ship.getChunkClaimDimension())) {
                             level = event.getServer().getLevel(level_.dimension());
+                            break;
                         }
+                        //EntityUtils.sendChatMessage(event.getServer(), Component.literal("Current Dimension iteration (Dimension): " + level_.dimension().toString()));
+                        //EntityUtils.sendChatMessage(event.getServer(), Component.literal("Current Dimension iteration (DimensionType): " + level_.dimensionType().toString()));
+                        //EntityUtils.sendChatMessage(event.getServer(), Component.literal("Current Dimension iteration (DimensionTypeId): " + level_.dimensionTypeId().toString()));
+                        //EntityUtils.sendChatMessage(event.getServer(), Component.literal("Current Dimension iteration (DimensionTypeRegistration): " + level_.dimensionTypeRegistration().toString()));
                     }
                     //EntityUtils.sendChatMessage(event.getServer(), Component.literal("1-1: " + ship.getChunkClaimDimension()));
                     Player player = null;

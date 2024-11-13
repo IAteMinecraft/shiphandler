@@ -11,12 +11,6 @@
     },
     "done": false
   },
-  "create:root": {
-    "criteria": {
-      "0": "2024-09-21 20:33:51 +0200"
-    },
-    "done": true
-  },
   "minecraft:recipes/tools/flint_and_steel": {
     "criteria": {
       "has_obsidian": "2024-09-22 17:25:19 +0200"
