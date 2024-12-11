@@ -8,6 +8,7 @@ public class ShiphandlerConfig {
     public static ForgeConfigSpec.BooleanValue infOpShips;
     public static ForgeConfigSpec.BooleanValue autoRegister;
     public static ForgeConfigSpec.IntValue maxShips;
+    public static ForgeConfigSpec.IntValue maxShipFindDistance;
 
 
     static {
@@ -30,6 +31,10 @@ public class ShiphandlerConfig {
         maxShips = builder
                 .comment("The Maximum number of ships a player can register. -1 for no limit.")
                 .defineInRange("Max ships", -1, -1, Integer.MAX_VALUE);
+
+        maxShipFindDistance = builder
+                .comment("The Maximum distance that will be used when looking for a player when a ship is created.\nNOTE: Large values may cause large amounts of lag!")
+                .defineInRange("Max ship Find Distance", 150, 1, Integer.MAX_VALUE);
 
         builder.pop();
     }

@@ -61,5 +61,4 @@ You are free to use this in modpacks, just credit me please :D
 
 ---
 ## TODO:  
-- Fix AutoRegister not finding player when far away from spawn
 - Fix AutoRegister not working in modded dimensions

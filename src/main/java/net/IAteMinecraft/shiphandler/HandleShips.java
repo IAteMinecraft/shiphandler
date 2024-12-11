@@ -90,12 +90,10 @@ public class HandleShips {
     }
 
     public static void onServerTick(TickEvent.ServerTickEvent event) {
-        //event.getServer().sendSystemMessage(Component.literal("Ticked"));
         if (event.phase == TickEvent.Phase.END) {
             Set<Ship> currentShips = getCurrentShips();
 
             if (currentShips != previousShips) {
-                //EntityUtils.sendChatMessage(event.getServer(), Component.literal("Ticked"));
                 // Ships added
                 Set<Ship> newShips = new HashSet<>(currentShips);
                 newShips.removeAll(previousShips);
@@ -111,7 +109,7 @@ public class HandleShips {
 
                     Level level = event.getServer().overworld();
                     //EntityUtils.sendChatMessage(event.getServer(), Component.literal("Ship Dimension: " + ship.getChunkClaimDimension()));
-                    //EntityUtils.sendChatMessage(event.getServer(), Component.literal("Dim id function: " + TextUtils.formatDimensoinId(level.dimension().toString())));
+                    //EntityUtils.sendChatMessage(event.getServer(), Component.literal("Dim id function: " + TextUtils.formatDimensionId(level.dimension().toString())));
                     for (Level level_ : event.getServer().getAllLevels()) {
                         if (TextUtils.formatDimensionId(level_.dimension().toString()).equals(ship.getChunkClaimDimension())) {
                             level = event.getServer().getLevel(level_.dimension());
@@ -150,21 +148,49 @@ public class HandleShips {
                     }*/
                     int inflateSize = 0;
                     while (player == null) {
-                        if (inflateSize > 150) {
+                        if (inflateSize > ShiphandlerConfig.maxShipFindDistance.get()) {
                             break;
                         }
                         player = EntityUtils.getNearestPlayerToBlock(level,
+                            MathUtils.getCenterPosition(
+                                new BlockPos((int) ship.getWorldAABB().minX(),
+                                    (int) ship.getWorldAABB().minY(),
+                                    (int) ship.getWorldAABB().minZ()
+                                ),
+                                new BlockPos((int) ship.getWorldAABB().maxX(),
+                                    (int) ship.getWorldAABB().maxY(),
+                                    (int) ship.getWorldAABB().maxZ()
+                                )
+                            ),
+                            MathUtils.AABBdc2AABB(ship.getWorldAABB()).inflate(inflateSize, inflateSize, inflateSize)
+                        );
+
+                        /*EntityUtils.sendChatMessage(event.getServer(),
+                            Component.literal("Centered Position: " +
                                 MathUtils.getCenterPosition(
-                                        new BlockPos((int) ship.getWorldAABB().minX(),
-                                                (int) ship.getWorldAABB().minY(),
-                                                (int) ship.getWorldAABB().minZ()),
-                                        new BlockPos((int) ship.getWorldAABB().maxX(),
-                                                (int) ship.getWorldAABB().maxY(),
-                                                (int) ship.getWorldAABB().maxZ())),
-                                MathUtils.AABBdc2AABB(ship.getWorldAABB()).inflate(
-                                        MathUtils.mid((int) ship.getWorldAABB().maxX(), (int) ship.getWorldAABB().minX()) + inflateSize,
-                                        MathUtils.mid((int) ship.getWorldAABB().maxY(), (int) ship.getWorldAABB().minY()) + inflateSize,
-                                        MathUtils.mid((int) ship.getWorldAABB().maxZ(), (int) ship.getWorldAABB().minZ()) + inflateSize));
+                                    new BlockPos((int) ship.getWorldAABB().minX(),
+                                        (int) ship.getWorldAABB().minY(),
+                                        (int) ship.getWorldAABB().minZ()
+                                    ),
+                                    new BlockPos((int) ship.getWorldAABB().maxX(),
+                                        (int) ship.getWorldAABB().maxY(),
+                                        (int) ship.getWorldAABB().maxZ()
+                                    )
+                                )
+                                + "; Start Pos: " +
+                                new BlockPos((int) ship.getWorldAABB().minX(),
+                                    (int) ship.getWorldAABB().minY(),
+                                    (int) ship.getWorldAABB().minZ()
+                                )
+                                + "; End Pos: " +
+                                new BlockPos((int) ship.getWorldAABB().maxX(),
+                                    (int) ship.getWorldAABB().maxY(),
+                                    (int) ship.getWorldAABB().maxZ()
+                                )
+                                + "; Ship AABB: " +
+                                MathUtils.AABBdc2AABB(ship.getWorldAABB()).inflate(inflateSize, inflateSize, inflateSize).toString()
+                            )
+                        );*/
 
                         inflateSize++;
                     }
@@ -174,9 +200,9 @@ public class HandleShips {
 
                         dataStore.addShip(player, ship);
 
-                        //EntityUtils.sendChatMessage(event.getServer(), Component.literal("1-1: " + dataStore.usesAutoRegister(player) + ", ").append(player.getDisplayName()));
+                        //EntityUtils.sendChatMessage(event.getServer(), Component.literal("1-3-1: " + dataStore.usesAutoRegister(player) + ", ").append(player.getDisplayName()));
                         if (dataStore.usesAutoRegister(player)) {
-                            //EntityUtils.sendChatMessage(event.getServer(), Component.literal("1-3: Attempted autoRegister"));
+                            //EntityUtils.sendChatMessage(event.getServer(), Component.literal("1-3-2: Attempted autoRegister"));
                             dataStore.registerShip(player, ship);
                         }
                     } else {
@@ -189,7 +215,7 @@ public class HandleShips {
                 // Handle removed ships
                 for (Ship ship : removedShips) {
                     ShiphandlerMod.getLogger().debug("Ship removed with Slug: {}", ship.getSlug());
-                    EntityUtils.sendChatMessage(event.getServer(), Component.literal("Ship removed with Slug: " + ship.getSlug()));
+                    //EntityUtils.sendChatMessage(event.getServer(), Component.literal("Ship removed with Slug: " + ship.getSlug()));
 
                     ShipDataStore dataStore = ShipDataStore.get(event.getServer().overworld());
                     dataStore.removeShip(ship.getId());
