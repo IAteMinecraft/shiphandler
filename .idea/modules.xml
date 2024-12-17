@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Ship-handler.shiphandler.test.iml" filepath="$PROJECT_DIR$/.idea/modules/Ship-handler.shiphandler.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/net.IAteMinecraft.shiphandler.shiphandler.test.iml" filepath="$PROJECT_DIR$/.idea/modules/net.IAteMinecraft.shiphandler.shiphandler.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/shiphandler.iml" filepath="$PROJECT_DIR$/.idea/modules/shiphandler.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/shiphandler.main.iml" filepath="$PROJECT_DIR$/.idea/modules/shiphandler.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/shiphandler.test.iml" filepath="$PROJECT_DIR$/.idea/modules/shiphandler.test.iml" />
     </modules>

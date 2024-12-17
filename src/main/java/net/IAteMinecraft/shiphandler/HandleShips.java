@@ -19,22 +19,18 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 import org.valkyrienskies.core.api.ships.ServerShip;
 import org.valkyrienskies.core.api.ships.Ship;
 import org.valkyrienskies.core.apigame.world.ServerShipWorldCore;
-import org.valkyrienskies.core.apigame.world.ShipWorldCore;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class HandleShips {
     private static Set<Ship> previousShips = new HashSet<>(); // Track ship IDs from previous tick
 
     // Static method to handle deleting ships
-    public static void deleteShips(ShipWorldCore world, List<Ship> ships) {
+    public static void deleteShips(MinecraftServer server, List<Ship> ships) {
         try {
-            ServerShipWorldCore shipWorld = (ServerShipWorldCore) world;
             for (Ship ship : ships) {
+                ServerShipWorldCore shipWorld = VSGameUtilsKt.getVsPipeline(server).getShipWorld();
                 ServerShip deleteShip = (ServerShip) ship;
                 shipWorld.deleteShip(deleteShip);
             }
@@ -49,16 +45,15 @@ public class HandleShips {
         ShipDataStore shipDataStore = ShipDataStore.get(server.overworld());
         List<Long> storedShipIds = shipDataStore.getAllRegisteredShipIDs();
 
-        for (ServerLevel level : server.getAllLevels()) {
-            List<Ship> shipsToDelete = new ArrayList<>();
-            for (Ship ship : VSGameUtilsKt.getAllShips(level)) {
-                if (!storedShipIds.contains(ship.getId())) {
-                    shipsToDelete.add(ship);
-                }
+        List<Ship> shipsToDelete = new ArrayList<>();
+        for (ServerShip ship : VSGameUtilsKt.getVsPipeline(server).getShipWorld().getAllShips()) {
+            if (!storedShipIds.contains(ship.getId()) || ship.getInertiaData().getMass() == 0.0) {
+                shipsToDelete.add(ship);
             }
-            // Delete all ships not in ShipDataStore
-            deleteShips(VSGameUtilsKt.getShipWorldNullable(level), shipsToDelete);
         }
+        // Delete all ships not in ShipDataStore
+        deleteShips(server, shipsToDelete);
+
     }
 
     // Method to get all current ships in the server
@@ -74,8 +69,24 @@ public class HandleShips {
     public static void onLevelLoad(LevelEvent.Load event) {
         ShiphandlerMod.getLogger().debug("----------------------------------------------------------------");
         ShiphandlerMod.getLogger().debug("Server initialised");
-        if (event.getLevel() instanceof ServerLevel) {
+        if (event.getLevel() instanceof ServerLevel level) {
+            ShipDataStore shipDataStore = ShipDataStore.get(level.getServer().overworld());
             previousShips = getCurrentShips(); // Initialize ship IDs when level loads
+
+            // Remove ships that weren't picked up when they were deleted
+                HashMap<Long, ShipDataStore.ShipData> copiedMap = new HashMap<>(shipDataStore.getShipData());
+                ShiphandlerMod.getLogger().debug(String.valueOf(copiedMap));
+                for (Ship ship : previousShips) {
+                    copiedMap.remove(ship.getId());
+                    ShiphandlerMod.getLogger().debug(String.valueOf(ship.getId()));
+                }
+                ShiphandlerMod.getLogger().debug(String.valueOf(copiedMap));
+                for (Long remainingId : copiedMap.keySet()) {
+                    shipDataStore.removeShip(remainingId);
+                    ShiphandlerMod.getLogger().debug(String.valueOf(remainingId));
+                }
+                ShiphandlerMod.getLogger().debug(String.valueOf(copiedMap));
+
             ShiphandlerMod.getLogger().debug("Level loaded: " + event.getLevel().toString());
         }
         ShiphandlerMod.getLogger().debug("----------------------------------------------------------------");
@@ -124,28 +135,6 @@ public class HandleShips {
                     Player player = null;
 
                     ShipDataStore dataStore = ShipDataStore.get(event.getServer().overworld());
-
-                    //TODO: Fix this
-                    /*// Iterate through each coordinate within the bounds
-                    if (ModList.get().isLoaded("vs_eureka")) {
-                        EntityUtils.sendChatMessage(event.getServer(), Component.literal("1-2-1: Eureka attempted"));
-                        for (int x = (int) ship.getWorldAABB().minX(); x <= (int) ship.getWorldAABB().maxX(); x++) {
-                            for (int y = (int) ship.getWorldAABB().minY(); y <= (int) ship.getWorldAABB().maxY(); y++) {
-                                for (int z = (int) ship.getWorldAABB().minZ(); z <= (int) ship.getWorldAABB().maxZ(); z++) {
-                                    BlockPos pos = new BlockPos(x, y, z);
-                                    BlockState blockstate = level.getBlockState(pos);
-                                    Block block = blockstate.getBlock();
-                                    BlockEntity blockEntity = level.getBlockEntity(pos);
-
-                                    if (ModList.get().isLoaded("vs_eureka") &&
-                                            blockEntity instanceof ShipHelmBlockEntityIntergrationUtils.isInstanceOfModBlock(block, "org.valkyrienskies.eureka.block.ShipHelmBlock")) {
-                                        player = EntityUtils.getNearestPlayerToBlock(level, pos, MathUtils.AABBdc2AABB(ship.getWorldAABB()).inflate(10));
-                                        EntityUtils.sendChatMessage(event.getServer(), Component.literal("1-2-2: Eureka succeeded"));
-                                    }
-                                }
-                            }
-                        }
-                    }*/
                     int inflateSize = 0;
                     while (player == null) {
                         if (inflateSize > ShiphandlerConfig.maxShipFindDistance.get()) {
@@ -208,7 +197,7 @@ public class HandleShips {
                     } else {
                         EntityUtils.sendChatMessage(event.getServer(), Component.literal("§4Unable to find player"));
 
-                        //dataStore.addShip(null, ship);
+                        dataStore.addShip(null, ship);
                     }
                 }
 

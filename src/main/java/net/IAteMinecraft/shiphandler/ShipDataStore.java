@@ -9,6 +9,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 
 import org.valkyrienskies.core.api.ships.Ship;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 @SuppressWarnings("unused")
@@ -24,7 +25,7 @@ public class ShipDataStore extends SavedData {
     }
 
     // Inner class to store ship data
-    private static class ShipData {
+    public static class ShipData {
         long shipId;
         String shipSlug;
         UUID createdBy;
@@ -54,7 +55,7 @@ public class ShipDataStore extends SavedData {
     }
 
     // Inner class to store player data
-    private static class PlayerData {
+    public static class PlayerData {
         int maxShips;
         boolean autoRegister;
         String playerName;
@@ -97,6 +98,16 @@ public class ShipDataStore extends SavedData {
         }
     }
 
+    // Gets the ShipData
+    public HashMap<Long, ShipData> getShipData() {
+        return this.shipDataMap;
+    }
+
+    // Gets the ShipData
+    public HashMap<UUID, PlayerData> getPlayerData() {
+        return this.playerDataMap;
+    }
+
     // Add a player to the store
     public void addPlayer(Player player, int maxShips, boolean autoRegister) {
         playerDataMap.put(player.getUUID(), new PlayerData(player.getDisplayName().getString(), maxShips, autoRegister));
@@ -104,10 +115,10 @@ public class ShipDataStore extends SavedData {
     }
 
     // Add a new ship to the ship store
-    public boolean addShip(Player player, Ship ship) {
+    public boolean addShip(@Nullable Player player, Ship ship) {
         long shipId = ship.getId();
         if (!shipDataMap.containsKey(shipId)) {
-            ShipData newShip = new ShipData(shipId, ship.getSlug(), player.getUUID());
+            ShipData newShip = new ShipData(shipId, ship.getSlug(), player != null ? player.getUUID() : new UUID(0, 0));
             shipDataMap.put(shipId, newShip);
             setDirty();
             return true;
@@ -117,15 +128,12 @@ public class ShipDataStore extends SavedData {
 
     // Register an existing ship to an existing player
     public boolean registerShip(Player player, Ship ship) {
-        //player.sendSystemMessage(Component.literal("Register Ship Attempt for ship: " + ship.getSlug() + ", by player: ").append(player.getDisplayName()));
         if (!playerDataMap.containsKey(player.getUUID())) {
             addPlayer(player, ShiphandlerConfig.maxShips.get(), ShiphandlerConfig.autoRegister.get());
-            //player.sendSystemMessage(Component.literal("Player has not been added to dataStore, adding: ").append(player.getDisplayName()));
         }
         PlayerData playerData = playerDataMap.get(player.getUUID());
         if (playerData != null && shipDataMap.containsKey(ship.getId())) {
             playerData.shipIds.add(ship.getId());
-            //player.sendSystemMessage(Component.literal("Added ship: " + ship.getSlug() + ", " + ship.getId() + ", for player: ").append(player.getDisplayName()));
             setDirty();
             return true;
         }
@@ -430,7 +438,9 @@ public class ShipDataStore extends SavedData {
     }
 
     public int getCurrentRegisteredShipCount(Player player) {
-        return playerDataMap.get(player.getUUID()).shipIds.size();
+        int i = 0;
+        for (Long id : playerDataMap.get(player.getUUID()).shipIds) {i++;}
+        return i;
     }
 
     public void setAutoRegister(Player player, boolean autoRegister) {
