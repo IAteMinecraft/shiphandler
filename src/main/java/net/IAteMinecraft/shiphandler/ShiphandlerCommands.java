@@ -95,9 +95,9 @@ public class ShiphandlerCommands {
                 .then(Commands.literal("list")
                     .executes(ShiphandlerCommands::list)
                 )
-                .then(Commands.literal("debugListAllShips")
+                /*.then(Commands.literal("debugListAllShips")
                     .executes(ShiphandlerCommands::debugListShips)
-                )
+                )*/
             )
         );
     }
