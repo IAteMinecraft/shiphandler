@@ -28,6 +28,8 @@ You can turn it on or off by adding true or false to the end of the command like
 
 To handle the ships, run the command:  
   `ship-handler handler run`  
+To delete a ship by it's ID use:  
+  `ship-handler handler deleteShip <ShipID>`  
   
 To see all the currently registered ships, and to which player it is registered, use:  
   `ship-handler list all-registered-ships`  
@@ -37,7 +39,7 @@ To see all the currently created ships, and which player created it, use:
 To remove a registered ship from another player (regardless of if you know the player's name or not) use:  
   `ship-handler ship remove <ship>`  
 To register a ship to your name (regardless of previous ownership) use:  
-  `hip-handler ship add <ship>`  
+  `ship-handler ship add <ship> [player]`  
   
 To change the various config settings go to the Server config file at:  
 ```
@@ -52,6 +54,8 @@ The settings that you can change:
 - Infinite OP Ships: If players that have been set as operator get to have infinite ships (Set to true by default)  
   
 - Max Ships: The maximum allowed ships that a player can register to their name, set to -1 for infinite ships. This is overridden by "Infinite OP Ships" (Default set to -1)  
+  
+- Max Ship Find Distance: The maximum distance that AutoRegister will look in to find a player. (Set to 150 by default)  
   
 ---
   
